@@ -1,16 +1,16 @@
 require 'HTTParty'
 require 'sinatra'
 require 'sinatra/reloader'
-
+#method to convert any string into utf-8 values
 def to_utf (str)
-    encoded_str = ''
-    str.split('').each {|char| 
-        encoded_char = char.encode('UTF-8')
-            encoded_char.bytes.each {|byte|
-                encoded_str << "%#{byte.to_s(16)}"
-            }
+  encoded_str = ''
+  str.split('').each {|char| 
+    encoded_char = char.encode('UTF-8')
+    encoded_char.bytes.each {|byte|
+      encoded_str << "%#{byte.to_s(16)}"
     }
-    return encoded_str
+  }
+  return encoded_str
 end
 
 get '/' do
@@ -20,8 +20,8 @@ end
 get '/search' do 
 	result = HTTParty.get("http://www.omdbapi.com/?s=" + to_utf(params[:search]))
 
+	#if the api returned anything
 	if result['Error'] == nil
-
 		@search_html_string = '<ul>'
 		result['Search'].each {|movie|
 
@@ -29,9 +29,9 @@ get '/search' do
 
 		}
 		@search_html_string << '</ul>'
-		
+
 		erb :search
-	else 
+	else #if api didn't return result, print error message
 		@search_html_string = "<p>#{result['Error']}</p>"
 	end
 end
