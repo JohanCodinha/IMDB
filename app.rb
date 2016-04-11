@@ -2,22 +2,34 @@ require 'HTTParty'
 require 'sinatra'
 require 'sinatra/reloader'
 
+def to_utf (str)
+    encoded_str = ''
+    str.split('').each {|char| 
+        encoded_char = char.encode('UTF-8')
+            encoded_char.bytes.each {|byte|
+                encoded_str << "%#{byte.to_s(16)}"
+            }
+    }
+    return encoded_str
+end
+
 get '/' do
 	erb :index
 end
 
 get '/search' do 
-	result = HTTParty.get("http://www.omdbapi.com/?s=" + params[:search])
+	result = HTTParty.get("http://www.omdbapi.com/?s=" + to_utf(params[:search]))
 
 	if result['Error'] == nil
-		@search_html_string = '<ul>'
 
+		@search_html_string = '<ul>'
 		result['Search'].each {|movie|
 
 			@search_html_string << "<li><a href='/display?id=#{movie['imdbID']}'>#{movie['Title']}</a></li>"
 
 		}
 		@search_html_string << '</ul>'
+		
 		erb :search
 	else 
 		@search_html_string = "<p>#{result['Error']}</p>"
@@ -27,6 +39,7 @@ end
 get '/display' do 
 	result = HTTParty.get("http://www.omdbapi.com/?i=" + params[:id] )
 	
+	#building HTML, the hard way
 	@display_html_string = '<div>'
 	result.each {|key, value|
 		if key == 'Poster'
@@ -37,11 +50,5 @@ get '/display' do
 	}
 	@display_html_string << '</div>'
 
-	# @display_html_string = '<div>'
-	# @display_html_string << "<p>Title : #{result['Title']}</p>" if result["Title"] != "N/A"
-	# @display_html_string << "<p>Director : #{result['Director']}</p>" if result["Director"] != "N/A"
-	# @display_html_string << "<p><img src=#{result['Poster']} alt=''></p>" if result["Poster"] != "N/A"
-	# @display_html_string << "<p>Plot : #{result['Plot']}</p>" if result["Plot"] != "N/A"
-	# @display_html_string << '</div>'
 	erb :display
 end
