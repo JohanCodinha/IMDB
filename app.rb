@@ -51,4 +51,4 @@ get '/display' do
 	@display_html_string << '</div>'
 
 	erb :display
-end
+end 
